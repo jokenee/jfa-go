@@ -1,0 +1,71 @@
+{
+    "meta": {
+        "name": "Bahasa Indonesia (ID)"
+    },
+    "strings": {
+        "pageTitle": "Buat Akun Jellyfin",
+        "createAccountHeader": "Buat Akun",
+        "accountDetails": "Detail",
+        "emailAddress": "Email",
+        "username": "Nama pengguna",
+        "password": "Sandi",
+        "reEnterPassword": "Masukkan Ulang Sandi",
+        "reEnterPasswordInvalid": "Kata sandi tidak sama.",
+        "createAccountButton": "Buat Akun",
+        "passwordRequirementsHeader": "Persyaratan Kata Sandi",
+        "successHeader": "Berhasil!",
+        "confirmationRequired": "Konfirmasi email diperlukan",
+        "confirmationRequiredMessage": "Silakan periksa kotak masuk email Anda untuk memverifikasi alamat Anda.",
+        "sendPINDiscord": "Ketik {command} di {server_channel} pada Discord, lalu kirim PIN di bawah ini.",
+        "yourAccountIsValidUntil": "Akun kamu akan berlaku hingga {date}.",
+        "sendPIN": "Kirim PIN di bawah ini ke bot, lalu kembali kesini untuk menerima tautan ke akun kamu.",
+        "matrixEnterUser": "Masukkan User ID kamu, tekan submit, nomor PIN akan dikirimkan ke kamu. Masukkan untuk melanjutkan.",
+        "oldPassword": "Sandi Lama",
+        "userPageSuccessMessage": "Kamu dapat melihat serta mengubah detail akunmu nanti di halaman {myAccount}.",
+        "newPassword": "Sandi Baru",
+        "welcomeUser": "Selamat datang, {user}!",
+        "joinTheServer": "Bergabung ke server:",
+        "changePassword": "Ubah Sandi",
+        "resetPassword": "Atur Ulang Sandi"
+    },
+    "notifications": {
+        "errorUserExists": "Pengguna sudah ada.",
+        "errorInvalidCode": "Kode undangan tidak sah.",
+        "errorDiscordVerification": "Butuh verifikasi pada Discord.",
+        "errorUnknown": "Terjadi kesalahan yang tidak diketahui.",
+        "errorTelegramVerification": "Butuh verifikasi pada Telegram.",
+        "errorInvalidPIN": "PIN salah.",
+        "errorCaptcha": "Captcha salah.",
+        "errorPassword": "Perhatikan persyaratan sandi.",
+        "errorNoMatch": "Sandi tidak sama.",
+        "verified": "Akun terverifikasi.",
+        "errorNoEmail": "Butuh email.",
+        "errorMatrixVerification": "Butuh verifikasi pada Matrix.",
+        "passwordChanged": "Sandi Diubah.",
+        "errorEmailLinked": "Email sudah digunakan.",
+        "errorAccountLinked": "Akun telah digunakan.",
+        "errorOldPassword": "Sandi lama salah."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Harus memiliki setidaknya {n} karakter",
+            "plural": "Harus memiliki setidaknya {n} karakter"
+        },
+        "uppercase": {
+            "singular": "Harus memiliki setidaknya {n} karakter huruf besar",
+            "plural": "Harus memiliki setidaknya {n} karakter huruf besar"
+        },
+        "lowercase": {
+            "singular": "Harus memiliki setidaknya {n} huruf kecil",
+            "plural": "Harus memiliki setidaknya {n} huruf kecil"
+        },
+        "number": {
+            "singular": "Harus memiliki setidaknya {n} angka",
+            "plural": "Harus memiliki setidaknya {n} angka"
+        },
+        "special": {
+            "singular": "Harus memiliki setidaknya {n} karakter khusus",
+            "plural": "Harus memiliki setidaknya {n} karakter khusus"
+        }
+    }
+}

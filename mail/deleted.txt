@@ -1,0 +1,5 @@
+{{ .yourAccountWas }}
+
+{{ .reasonString }}: {{ .reason }}
+
+{{ .message }}

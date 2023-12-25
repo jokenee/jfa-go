@@ -1,0 +1,32 @@
+{
+    "meta": {
+        "name": "Bahasa Indonesia (ID)"
+    },
+    "strings": {
+        "username": "Nama pengguna",
+        "password": "Sandi",
+        "emailAddress": "Alamat Email",
+        "name": "Nama",
+        "submit": "Submit",
+        "send": "Kirim",
+        "success": "Sukses",
+        "continue": "Lanjut",
+        "error": "Error",
+        "copy": "Salin",
+        "time24h": "Waktu 24 jam",
+        "time12h": "Waktu 12 jam",
+        "theme": "Tema",
+        "login": "Masuk",
+        "logout": "Keluar",
+        "edit": "Edit",
+        "delete": "Hapus",
+        "inviteRemainingUses": "Penggunaan yang tersisa"
+    },
+    "notifications": {
+        "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",
+        "errorConnection": "Tidak dapat terhubung ke jfa-go.",
+        "errorUnknown": "Terjadi kesalahan yang tidak diketahui.",
+        "error401Unauthorized": "Tidak ter-otorisasi. Coba segarkan halaman.",
+        "errorSaveSettings": "Tidak dapat menyimpan pengaturan."
+    }
+}

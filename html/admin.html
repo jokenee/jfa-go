@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en" class="{{ .cssClass }}">
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/{{ .cssVersion }}bundle.css">
+        <script>
+            window.URLBase = "{{ .urlBase }}";
+            window.notificationsEnabled = {{ .notifications }};
+            window.emailEnabled = {{ .emailEnabled }};
+            window.telegramEnabled = {{ .telegramEnabled }};
+            window.discordEnabled = {{ .discordEnabled }};
+            window.matrixEnabled = {{ .matrixEnabled }};
+            window.ombiEnabled = {{ .ombiEnabled }};
+            window.usernameEnabled = {{ .username }};
+            window.langFile = JSON.parse({{ .language }});
+            window.linkResetEnabled = {{ .linkResetEnabled }};
+            window.language = "{{ .langName }}";
+            window.jellyfinLogin = {{ .jellyfinLogin }};
+            window.jfAdminOnly = {{ .jfAdminOnly }};
+            window.jfAllowAll = {{ .jfAllowAll }};
+            window.referralsEnabled = {{ .referralsEnabled }};
+            window.loginAppearance = "{{ .loginAppearance }}";
+        </script>
+        <title>Admin - jfa-go</title>
+        {{ template "header.html" . }}
+    </head>
+    <body class="max-w-full overflow-x-hidden section">
+        {{ template "login-modal.html" . }}
+        <div id="modal-add-user" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-add-user" href="">
+                <span class="heading">{{ .strings.newUser }} <span class="modal-close">&times;</span></span>
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="add-user-user">
+                <input type="email" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.emailAddress }}">
+                <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="add-user-password">
+                <label class="label supra">{{ .strings.profile }}</label>
+                <div class="select ~neutral @low mb-2 mt-4">
+                    <select id="add-user-profile">
+                    </select>
+                </div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.create }}</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-about" class="modal">
+            <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 content card">
+                <img src="{{ .urlBase }}/banner.svg" class="banner header" alt="jfa-go banner">
+                <span class="heading"><span class="modal-close">&times;</span></span>
+                <p>{{ .strings.version }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .version }}</span></p>
+                <p>{{ .strings.commitNoun }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .commit }}</span></p>
+                <p>{{ .strings.buildTime }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .buildTime }}</span></p>
+                <p>{{ .strings.builtBy }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .builtBy }}</span></p>
+                <div class="flex flex-row flex-wrap gap-2 my-2">
+                    <a class="button ~neutral lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-2"></i>github</a>
+                    <a class="button ~urge lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
+                    <a class="button ~positive lang-link" href="https://weblate.jfa-go.com">translation</a>
+                    <div class="dropdown" tabindex="0">
+                        <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info dropdown-button lang-link">
+                            <i class="ri-hand-heart-line mr-2"></i>
+                            donate
+                            <span class="ml-2 chev"></span>
+                        </a>
+                        <div class="dropdown-display">
+                            <div class="card ~neutral @low">
+                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~neutral mb-2 w-full lang-link">GitHub</a>
+                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button ~neutral mb-2 w-full lang-link">Ko-fi</a>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="button ~urge @low discord lang-link" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-2"></i>discord</a>
+                </div>
+                <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License. Font "Hanken Grotesk" available under SIL OFL 1.1 License.</a></p>
+                <pre class="font-mono bg-inherit">{{ .license }}</pre>
+            </div>
+        </div>
+        <div id="modal-logs" class="modal">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content content card">
+                <span class="heading">{{ .strings.logs }}<span class="modal-close">&times;</span></span>
+                <pre class="monospace" id="log-area"></pre>
+            </div>
+        </div>
+        <div id="modal-modify-user" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-modify-user" href="">
+                <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.modifySettingsDescription }}</p>
+                <div class="flex flex-row mb-4">
+                    <label class="grow mr-2">
+                        <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
+                        <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
+                    </label>
+                    <label class="grow ml-2">
+                        <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
+                        <span class="button ~neutral @low supra full-width center">{{ .strings.user }}</span>
+                    </label>
+                </div>
+                <div class="select ~neutral @low mb-4">
+                    <select id="modify-user-profiles"></select>
+                </div>
+                <div class="select ~neutral @low mb-4 unfocused">
+                    <select id="modify-user-users"></select>
+                </div>
+                <label class="switch mb-4">
+                    <input type="checkbox" id="modify-user-homescreen" checked>
+                    <span>{{ .strings.applyHomescreenLayout }}</span>
+                </label>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
+                </label>
+            </form>
+        </div>
+        {{ if .referralsEnabled }}
+        <div id="modal-enable-referrals-user" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-enable-referrals-user" href="">
+                <span class="heading"><span id="header-enable-referrals-user"></span> <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.enableReferralsDescription }}</p>
+                <div class="flex flex-row mb-4">
+                    <label class="grow mr-2">
+                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-profile" checked>
+                        <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
+                    </label>
+                    <label class="grow ml-2">
+                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-invite">
+                        <span class="button ~neutral @low supra full-width center">{{ .strings.invite }}</span>
+                    </label>
+                </div>
+                <div class="select ~neutral @low mb-4">
+                    <select id="enable-referrals-user-profiles"></select>
+                </div>
+                <div class="select ~neutral @low mb-4 unfocused">
+                    <select id="enable-referrals-user-invites"></select>
+                </div>
+                <label class="switch mb-4">
+                    <input type="checkbox" id="enable-referrals-user-expiry">
+                    <span>{{ .strings.useInviteExpiry }}</span>
+                    <span class="flex flex-row support mt-2">{{ .strings.useInviteExpiryNote }}</span>
+                </label>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-enable-referrals-profile" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-enable-referrals-profile" href="">
+                <span class="heading"><span id="header-enable-referrals-profile">{{ .strings.enableReferrals }}</span> <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.enableReferralsProfileDescription }}</p>
+                <label class="supra" for="enable-referrals-profile-invites">{{ .strings.invite }}</label>
+                <div class="select ~neutral @low mb-4 mt-2">
+                    <select id="enable-referrals-profile-invites"></select>
+                </div>
+                <label class="switch mb-4">
+                    <input type="checkbox" id="enable-referrals-profile-expiry">
+                    <span>{{ .strings.useInviteExpiry }}</span>
+                    <span class="flex flex-row support mt-2">{{ .strings.useInviteExpiryNote }}</span>
+                </label>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
+                </label>
+            </form>
+        </div>
+        {{ end }}
+        <div id="modal-delete-user" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-delete-user" href="">
+                <span class="heading"><span id="header-delete-user"></span> <span class="modal-close">&times;</span></span>
+                <div class="content mt-8">
+                    <label class="switch mb-4">
+                        <input type="checkbox" id="delete-user-notify" checked>
+                        <span>{{ .strings.sendDeleteNotificationEmail }}</span>
+                    </label>
+                    <textarea id="textarea-delete-user" class="textarea full-width ~neutral @low mb-4" placeholder="{{ .strings.sendDeleteNotificationExample }}"></textarea>
+                    <label>
+                        <input type="submit" class="unfocused">
+                        <span class="button ~critical @low full-width center supra submit">{{ .strings.delete }}</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div id="modal-extend-expiry" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-extend-expiry" href="">
+                <span class="heading"><span id="header-extend-expiry"></span> <span class="modal-close">&times;</span></span>
+                <div class="content mt-8">
+                    <aside class="aside sm ~urge dark:~d_info mb-2 @low row unfocused" id="extend-expiry-date"></aside>
+                    <div>
+                        <span class="text-xl supra row py-1">{{ .strings.setExpiry }}</span>
+                        <div class="row">
+                            <input type="text" id="extend-expiry-text" class="input ~neutral @low mb-2 mt-4" placeholder="{{ .strings.enterExpiry }}">
+                        </div>
+                    </div>
+                    <div id="extend-expiry-field-inputs">
+                        <span class="text-xl supra row py-1">{{ .strings.extendExpiry }}</span>
+                        <div class="row">
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-months">{{ .strings.inviteMonths }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-months">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-days">{{ .strings.inviteDays }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-days">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-hours">{{ .strings.inviteHours }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-hours">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-minutes">{{ .strings.inviteMinutes }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-minutes">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="switch mb-4">
+                        <input type="checkbox" id="expiry-extend-enable" checked>
+                        <span>{{ .strings.sendDeleteNotificationEmail }}</span>
+                    </label>
+                    <textarea id="textarea-extend-enable" class="textarea full-width ~neutral @low mb-4" placeholder="{{ .strings.sendDeleteNotificationExample }}"></textarea>
+                    <label>
+                        <input type="submit" class="unfocused">
+                        <span class="button ~critical @low full-width center supra submit">{{ .strings.submit }}</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div id="modal-announce" class="modal">
+            <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-announce" href="">
+                <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
+                <div class="flex flex-col md:flex-row">
+                    <div class="col card ~neutral @low">
+                        <div id="announce-details">
+                            <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
+                            <div id="announce-variables">
+                                <span class="button ~urge @low mb-2 mt-4" id="announce-variables-username" style="margin-left: 0.25rem; margin-right: 0.25rem;"><span class="font-mono bg-inherit">{username}</span></span>
+                            </div>
+                            <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
+                            <input type="text" id="announce-subject" class="input ~neutral @low mb-2 mt-4">
+                            <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
+                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-4 font-mono"></textarea>
+                            <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
+                        </div>
+                        <label class="label unfocused" id="announce-name"><p class="supra">{{ .strings.name }}</p>
+                            <input type="text" class="input ~neutral @low mb-2 mt-4">
+                            <p class="support">{{ .strings.templateEnterName }}</p>
+                        </label>
+                        <div class="flex flex-row justify-between">
+                            <label>
+                                <input type="submit" class="unfocused">
+                                <span class="button ~urge @low center supra submit">{{ .strings.send }}</span>
+                            </label>
+                            <span class="button ~info @low center supra" id="save-announce">{{ .strings.saveAsTemplate }}</span>
+                        </div>
+                    </div>
+                    <div class="col card ~neutral @low">
+                        <span class="subheading supra">{{ .strings.preview }}</span>
+                        <div class="mt-8" id="announce-preview"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="modal-customize" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
+                <span class="heading">{{ .strings.customizeMessages }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.customizeMessagesDescription }}</p>
+                <div class="">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ .strings.name }}</th>
+                                <th class="table-inline justify-center">{{ .strings.reset }}</th>
+                                <th>{{ .strings.edit }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customize-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="modal-editor" class="modal">
+            <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-editor" href="">
+                <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
+                <div class="row">
+                    <div class="col card ~neutral @low">
+                        <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
+                        <div id="editor-variables" class="mt-4"></div>
+                        <span class="label supra" for="editor-conditionals" id="label-editor-conditionals">{{ .strings.conditionals }}</span>
+                        <div id="editor-conditionals"></div>
+                        <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
+                        <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low mt-4 font-mono"></textarea>
+                        <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
+                        <div class="flex-row">
+                            <label class="full-width ml-2">
+                                <input type="submit" class="unfocused">
+                                <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col card ~neutral @low">
+                        <span class="subheading supra">{{ .strings.preview }}</span>
+                        <div class="mt-8" id="editor-preview"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="modal-restart" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 ~critical @low">
+                <span class="heading">{{ .strings.settingsRestartRequired }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.settingsRestartRequiredDescription }}</p>
+                <div class="float-right">
+                    <span class="button ~info @low mb-2" id="settings-apply-no-restart">{{ .strings.settingsApplyRestartLater }}</span>
+                    <span class="button ~critical @low" id="settings-apply-restart">{{ .strings.settingsApplyRestartNow }}</span>
+                </div>
+            </div>
+        </div>
+        <div id="modal-backups" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-2/3">
+                <span class="heading">{{ .strings.backups }} <span class="modal-close">&times;</span></span>
+                <div class="content my-4">
+                    {{ .strings.backupsDescription }}
+                    <ul>
+                        <li>{{ .strings.backupsCopy }}</li>
+                        <li>{{ .strings.backupsFormatNote }}</li>
+                        <li><a target="_blank" href="https://wiki.jfa-go.com/docs/backups/">{{ .strings.wikiPage }}</a></li>
+                    </ul>
+                </div>
+                <div class="flex flex-row flex-wrap my-2">
+                    <button class="button ~info @low mr-2 mb-2" id="settings-backups-backup">{{ .strings.backupNow }}</button>
+                    <button class="button ~neutral @low mr-2 mb-2" id="settings-backups-upload">{{ .strings.backupUpload }}</button>
+                    <input id="backups-file" name="backups-file" type="file" hidden>
+                    <button class="button ~neutral @low mr-2 mb-2" id="settings-backups-sort-direction">{{ .strings.sortDirection }}</button>
+                </div>
+                <div class="overflow-x-auto text-xs md:text-sm">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ .strings.name }}</th>
+                                <th>{{ .strings.date }}</th>
+                                <th class="table-inline justify-center">{{ .strings.backupDownloadRestore }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backups-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="modal-backed-up" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 ~neutral @low">
+                <span class="heading">{{ .strings.backupCreated }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4" id="settings-backed-up-location"></p>
+                <p class="content my-4">{{ .strings.backupCanDownload }}</p>
+                <div>
+                    <button class="button flex w-full ~info @low mb-2"><span class="flex items-center" id="settings-backed-up-download">{{ .strings.download }}</span></button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-refresh" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 ~neutral @low">
+                <span class="heading">{{ .strings.settingsApplied }}</span>
+                <p class="content">{{ .strings.settingsRefreshPage }}</p>
+            </div>
+        </div>
+        <div id="modal-send-pwr" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 ~neutral @low">
+                <span class="heading">{{ .strings.sendPWR }}</span>
+                <p class="content my-2" id="send-pwr-note"></p>
+                <span class="button ~urge @low mt-2" id="send-pwr-link">{{ .strings.copy }}</span>
+            </div>
+        </div>
+        <div id="modal-ombi-profile" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-ombi-defaults" href="">
+                <span class="heading">{{ .strings.ombiProfile }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.ombiUserDefaultsDescription }}</p>
+                <div class="select ~neutral @low mb-4">
+                    <select></select>
+                </div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-user-profiles" class="modal">
+            <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-2/3 content card">
+                <span class="heading">{{ .strings.userProfiles }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.userProfilesDescription }}</p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ .strings.name }}</th>
+                                <th>{{ .strings.userProfilesIsDefault }}</th>
+                                {{ if .ombiEnabled }}
+                                <th>Ombi</th>
+                                {{ end }}
+                                {{ if .referralsEnabled }}
+                                <th>{{ .strings.referrals }}</th>
+                                {{ end }}
+                                <th>{{ .strings.from }}</th>
+                                <th>{{ .strings.userProfilesLibraries }}</th>
+                                <th><span class="button ~neutral @high" id="button-profile-create">{{ .strings.create }}</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-profiles"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="modal-add-profile" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-add-profile" href="">
+                <span class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.addProfileDescription }}</p>
+                <label>
+                    <span class="supra">{{ .strings.addProfileNameOf }} </span>
+                    <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.name }}" id="add-profile-name">
+                <label>
+                    <span class="supra">{{ .strings.user }}</span>
+                    <div class="select ~neutral @low mt-4 mb-2">
+                        <select id="add-profile-user"></select>
+                    </div>
+                </label>
+                <label class="switch mb-4">
+                    <input type="checkbox" id="add-profile-homescreen" checked>
+                    <span>{{ .strings.addProfileStoreHomescreenLayout }}</span>
+                </label>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.create }}</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-update" class="modal">
+            <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 content card">
+                <span class="heading">{{ .strings.updates }} <span class="modal-close">&times;</span></span>
+                <p class="content">
+                    <h2 class="mt-2">
+                        <a id="update-version"></a> (<span class="font-mono bg-inherit" id="update-commit"></span>)
+                    </h2>
+                    <p class="content mt-2" id="update-description"></p>
+                    <p class="support mt-2" id="update-date"></p>
+                    <div class="content markdown-box mt-2" id="update-changelog"></div>
+                </p>
+                <span class="button ~info @low full-width center mt-2" id="update-download">{{ .strings.download }}</span>
+                <span class="button ~urge @low full-width center mt-2" id="update-update">{{ .strings.update }}</span>
+            </div>
+        </div>
+        {{ if .telegramEnabled }}
+        <div id="modal-telegram" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
+                <span class="heading mb-4">{{ .strings.linkTelegram }}</span>
+                <p class="content mb-4">{{ .strings.sendPIN }}</p>
+                <h1 class="ac" id="telegram-pin"></h1>
+                <a class="subheading link-center" id="telegram-link" target="_blank">
+                    <span class="shield ~info mr-2">
+                        <span class="icon">
+                            <i class="ri-telegram-line"></i>
+                        </span>
+                    </span>
+                    &#64;<span id="telegram-username">
+                </a>
+                <span class="button ~info @low full-width center mt-4" id="telegram-waiting">{{ .strings.success }}</span>
+            </div>
+        </div>
+        {{ end }}
+        {{ if .discordEnabled }}
+        <div id="modal-discord" class="modal">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
+                <span class="heading mb-4"><span id="discord-header"></span><span class="modal-close">&times;</span></span>
+                <p class="content mb-4" id="discord-description"></p>
+                <div class="row">
+                    <input type="search" class="col sm field ~neutral @low input" id="discord-search" placeholder="user#1234">
+                </div>
+                <table class="table"><tbody id="discord-list"></tbody></table>
+            </div>
+        </div>
+        {{ end }}
+        <div id="modal-matrix" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-matrix" href="">
+                <span class="heading">{{ .strings.linkMatrix }}</span>
+                <p class="content my-4">{{ .strings.linkMatrixDescription }}</p>
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="matrix-user">
+                <input type="password" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.password }}" id="matrix-password">
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
+                </label>
+            </form>
+        </div>
+        <div id="notification-box"></div>
+        <div class="top-4 left-4 absolute flex flex-row gap-2">
+            <span class="dropdown z-[11]" tabindex="0" id="lang-dropdown">
+                <span class="button ~urge dropdown-button">
+                    <i class="ri-global-line"></i>
+                    <span class="ml-2 chev"></span>
+                </span>
+                <div class="dropdown-display">
+                    <div class="card ~neutral @low">
+                        <label class="switch pb-4">
+                            <input type="radio" name="lang-time" id="lang-12h">
+                            <span>{{ .strings.time12h }}</span>
+                        </label>
+                        <label class="switch pb-4">
+                            <input type="radio" name="lang-time" id="lang-24h">
+                            <span>{{ .strings.time24h }}</span>
+                        </label>
+                        <div id="lang-list"></div>
+                    </div>
+                </div>
+            </span>
+            <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
+        </div>
+        {{ if .userPageEnabled }}
+            <div class="top-4 right-4 absolute">
+                <a class="button ~info" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+            </div>
+        {{ end }}
+        <div class="page-container">
+            <div class="mb-4">
+                <header>
+                    <div class="flex flex-row overflow-x-scroll items-center">
+                        <span id="button-tab-invites" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.invites }}</span>
+                        <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.accounts }}</span>
+                        <span id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.activity }}</span>
+                        <span id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.settings }}</span>
+                    </div>
+                </header>
+            </div>
+            <div class="mb-4">
+                <div>
+                    <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
+                </div>
+            </div>
+            <div id="tab-invites">
+                <div class="card @low invites dark:~d_neutral mb-4 overflow-visible">
+                    <span class="heading">{{ .strings.invites }}</span>
+                    <div id="invites" class="mt-2"></div>
+                </div>
+                <div class="card @low dark:~d_neutral">
+                    <span class="heading">{{ .strings.create }}</span>
+                    <div class="flex flex-col md:flex-row gap-3 mt-2" id="create-inv">
+                        <div class="card ~neutral @low flex flex-col gap-2 w-1/2">
+                            <div class="flex flex-row gap-2">
+                                <label class="w-1/2">
+                                    <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
+                                    <span class="button ~neutral @high supra full-width center">{{ .strings.inviteDuration }}</span>
+                                </label>
+                                <label class="w-1/2">
+                                    <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
+                                    <span class="button ~neutral @low supra full-width center">{{ .strings.userExpiry }}</span>
+                                </label>
+                            </div>
+                            <div id="inv-duration" class="flex flex-col gap-2">
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="create-months">{{ .strings.inviteMonths }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="create-months">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="create-days">{{ .strings.inviteDays }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="create-days">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="create-hours">{{ .strings.inviteHours }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="create-hours">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="create-minutes">{{ .strings.inviteMinutes }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="create-minutes">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="user-expiry" class="unfocused flex flex-col gap-2">
+                                <div class="flex flex-row gap-2">
+                                    <p class="support">{{ .strings.userExpiryDescription }}</p>
+                                    <div>
+                                        <label for="create-user-expiry-enabled" class="button ~neutral @low">
+                                            <input type="checkbox" id="create-user-expiry-enabled" aria-label="User duration enabled">
+                                            <span class="ml-2">{{ .strings.enabled }} </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="user-months">{{ .strings.inviteMonths }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="user-months">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="user-days">{{ .strings.inviteDays }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="user-days">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="user-hours">{{ .strings.inviteHours }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="user-hours">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grow flex flex-col gap-4">
+                                        <label class="label supra" for="user-minutes">{{ .strings.inviteMinutes }}</label>
+                                        <div class="select ~neutral @low">
+                                            <select id="user-minutes">
+                                                <option>0</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-4">
+                                <label class="label supra" for="create-label"> {{ .strings.label }}</label>
+                                <input type="text" id="create-label" class="input ~neutral @low">
+                            </div>
+                            <div class="flex flex-col gap-4">
+                                <div>
+                                    <label class="label supra" for="create-user-label"> {{ .strings.userLabel }}</label>
+                                    <p class="support">{{ .strings.userLabelDescription }}</p>
+                                </div>
+                                <input type="text" id="create-user-label" class="input ~neutral @low">
+                            </div>
+                        </div>
+                        <div class="card ~neutral @low flex flex-col justify-between gap-2 w-1/2">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex flex-col gap-4">
+                                    <label class="label supra" for="create-uses">{{ .strings.inviteNumberOfUses }}</label>
+                                    <div class="flex flex-row gap-2">
+                                        <input type="number" min="0" id="create-uses" class="input ~neutral @low" value=1>
+                                        <label for="create-inf-uses" class="button ~neutral @low" title="Set uses to infinite">
+                                            <span>&infin;</span>
+                                            <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
+                                        </label>
+                                    </div>
+                                </div>
+                                <p class="support unfocused" id="create-inf-uses-warning"><span class="badge ~critical">{{ .strings.warning }}</span> {{ .strings.inviteInfiniteUsesWarning }}</p>
+                                <div class="flex flex-col gap-4">
+                                    <label class="label supra">{{ .strings.profile }}</label>
+                                    <div class="select ~neutral @low">
+                                        <select id="create-profile">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="create-send-to-container" class="flex flex-col gap-4">
+                                    <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
+                                    <div class="flex flex-row gap-2">
+                                        {{ if .discordEnabled }}
+                                        <input type="text" id="create-send-to" class="input ~neutral @low" placeholder="example@example.com | user#1234">
+                                        <span id="create-send-to-search" class="button ~neutral @low">
+                                            <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
+                                        </span>
+                                        {{ else }}
+                                        <input type="email" id="create-send-to" class="input ~neutral @low" placeholder="example@example.com">
+                                        {{ end }}
+                                        <label for="create-send-to-enabled" class="button ~neutral @low">
+                                            <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="button ~urge @low supra full-width center lg" id="create-submit">{{ .strings.create }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-accounts" class="unfocused">
+                <div class="card @low dark:~d_neutral accounts mb-4 overflow-visible">
+                    <div id="accounts-filter-dropdown" class="dropdown manual z-10 w-full">
+                        <div class="flex flex-col md:flex-row align-middle gap-2">
+                            <div class="flex flex-row align-middle justify-between md:justify-normal">
+                                <span class="text-3xl font-bold mr-4">{{ .strings.accounts }}</span>
+                                <span class="dropdown-manual-toggle"><button class="h-full button ~neutral @low center" id="accounts-filter-button" tabindex="0">{{ .strings.filters }}</button></span>
+                            </div>
+                            <div class="flex flex-row align-middle w-full">
+                                <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
+                                <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                            </div>
+                        </div>
+                        <div class="dropdown-display max-w-full">
+                            <div class="card ~neutral @low mt-2 overflow-x-scroll" id="accounts-filter-list">
+                                <p class="supra pb-2">{{ .strings.filters }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="supra py-1 sm hidden" id="accounts-search-options-header">{{ .strings.searchOptions }}</div>
+                    <div class="row -mx-2 mb-2">
+                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="accounts-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
+                        <span id="accounts-filter-area"></span>
+                    </div>
+                    <div class="supra pt-1 pb-2 sm">{{ .strings.actions }}</div>
+                    <div class="flex flex-row flex-wrap gap-3 mb-4">
+                        <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
+                        <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
+                            <span class="w-full button ~info @low center items-baseline" id="accounts-announce">{{ .strings.announce }}</span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low">
+                                    <span class="supra sm">{{ .strings.templates }}</span>
+                                    <div id="accounts-announce-templates"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="button ~urge @low center " id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                        {{ if .referralsEnabled }}
+                            <span class="button ~urge @low center " id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
+                        {{ end }}
+                        <div id="accounts-expiry-dropdown" class="dropdown pb-0i " tabindex="0">
+                            <span class="w-full button ~positive @low center items-baseline" id="accounts-expiry-dropdown-button">{{ .strings.expiry }} <i class="ri-arrow-down-s-line ml-2"></i></span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low">
+                                    <span class="button ~warning full-width @low center" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                                    <span class="button ~critical full-width @low center mt-2" id="accounts-remove-expiry">{{ .strings.removeExpiry }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="accounts-disable-enable-dropdown" class="dropdown manual pb-0i " tabindex="0">
+                            <span class="w-full button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low">
+                                    <span class="button ~urge full-width accounts-announce-template-button" id="accounts-enable-expiry">{{ .strings.setExpiry }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="button ~info @low center unfocused " id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
+                        <span class="button ~critical @low center " id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                    </div>
+                    <div class="card @low accounts-header table-responsive mt-2">
+                        <table class="table text-base leading-4">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" value="" id="accounts-select-all"></th>
+                                    <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
+                                    {{ if .jellyfinLogin }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
+                                    {{ end }}
+                                    <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
+                                    {{ if .telegramEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
+                                    {{ end }}
+                                    {{ if .matrixEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
+                                    {{ end }}
+                                    {{ if .discordEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
+                                    {{ end }}
+                                    {{ if .referralsEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
+                                    {{ end }}
+                                    <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
+                                    <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accounts-list"></tbody>
+                        </table>
+                        <div class="unfocused h-[100%] my-3" id="accounts-not-found">
+                            <div class="flex flex-col h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                <button class="button ~neutral @low accounts-search-clear">
+                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-activity" class="unfocused">
+                <div class="card @low dark:~d_neutral activity mb-4 overflow-visible">
+                    <div id="activity-filter-dropdown" class="dropdown manual z-10 w-full" tabindex="0">
+                        <div class="flex flex-col md:flex-row align-middle gap-2">
+                            <div class="flex flex-row align-middle justify-between md:justify-normal">
+                                <span class="text-3xl font-bold mr-4">{{ .strings.activity }}</span>
+                                <div class="flex flex-row align-middle">
+                                    <span class="dropdown-manual-toggle"><button class="h-full button ~neutral @low center" id="activity-filter-button">{{ .strings.filters }}</button></span>
+                                    <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
+                                </div>
+                            </div>
+                            <div class="flex flex-row align-middle w-full">
+                                <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
+                                <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                                <button class="button ~info @low ml-2" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
+                            </div>
+                        </div>
+                        <div class="dropdown-display max-w-full">
+                            <div class="card ~neutral @low mt-2 overflow-x-scroll" id="activity-filter-list">
+                                <p class="supra pb-2">{{ .strings.filters }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-row justify-between pt-3 pb-2">
+                        <div class="supra sm hidden" id="activity-search-options-header">{{ .strings.searchOptions }}</div>
+                        <div class="supra sm flex flex-row gap-2">
+                            <span id="activity-total-records"></span>
+                            <span id="activity-loaded-records"></span>
+                            <span id="activity-shown-records"></span>
+                        </div>
+                    </div>
+                    <div class="row -mx-2 mb-2">
+                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="activity-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
+                        <span id="activity-filter-area"></span>
+                    </div>
+                    <div class="my-2">
+                        <div id="activity-card-list"></div>
+                        <div id="activity-loader"></div>
+                        <div class="unfocused h-[100%] my-3" id="activity-not-found">
+                            <div class="flex flex-col h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                <span class="text-xl font-medium italic mb-3 unfocused" id="activity-keep-searching-description">{{ .strings.keepSearchingDescription }}</span>
+                                <div class="flex flex-row">
+                                    <button class="button ~neutral @low activity-search-clear">
+                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    </button>
+                                    <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <button class="button m-2 ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button m-2 ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-settings" class="unfocused">
+                <div class="card @low dark:~d_neutral settings overflow">
+                    <div class="flex flex-col md:flex-row align-middle gap-2">
+                        <div class="flex flex-row align-middle justify-between md:justify-normal">
+                            <span class="heading">{{ .strings.settings }}</span>
+                            <label for="settings-advanced-enabled" class="button ~neutral @low ml-2">
+                                <input type="checkbox" id="settings-advanced-enabled" aria-label="Advanced settings enabled">
+                                <span class="ml-2">{{ .strings.advancedSettings }} </span>
+                            </label>
+                        </div>
+                        <div class="flex flex-row justify-start md:justify-end gap-2 w-full">
+                            <span class="button ~neutral @low" id="settings-logs">{{ .strings.logs }}</span>
+                            <span class="button ~info @low" id="settings-backups">{{ .strings.backups }}</span>
+                            <span class="button ~neutral @low" id="settings-restart">{{ .strings.settingsRestart }}</span>
+                            <span class="button ~urge @low unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <div class="card @low dark:~d_neutral col" id="settings-sidebar">
+                            <div class="flex flex-row justify-between">
+                                <input type="search" class="field ~neutral @low input settings-section-button justify-between mb-2" id="settings-search" placeholder="{{ .strings.search }}">
+                                <button class="button ~neutral @low center -ml-10 rounded-s-none mb-2 settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
+                            </div>
+                            <aside class="aside sm ~urge dark:~d_info mb-2 @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside> 
+                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
+                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
+                        </div>
+                        <div class="card ~neutral @low col overflow" id="settings-panel">
+                            <div class="settings-section unfocused h-[100%]" id="settings-not-found">
+                                <div class="flex flex-col h-[100%] justify-center items-center">
+                                    <span class="text-2xl font-medium italic mb-2">{{ .strings.noResultsFound }}</span>
+                                    <span class="mb-2 px-12 text-center">{{ .strings.settingsMaybeUnderAdvanced }}</span>
+                                    <button class="button ~neutral @low settings-search-clear">
+                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="{{ .urlBase }}/js/admin.js" type="module"></script>
+    </body>
+</html>

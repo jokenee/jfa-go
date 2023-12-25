@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" class="{{ .cssClass }}">
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/{{ .cssVersion }}bundle.css">
+        {{ template "header.html" . }}
+        <title>Invalid Code - jfa-go</title>
+    </head>
+    <body class="section">
+        <div class="page-container">
+            <div class="card">
+                <h1 class="text-3xl font-semibold">Invalid invite code.</h1>
+                <p class="content">The code above was either incorrect, or has expired.</p>
+                <p class="content">
+                    {{ .contactMessage }}
+                </p>
+            </div>
+        </div>
+    </body>
+</html>                            
